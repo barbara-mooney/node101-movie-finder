@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 //Schedules a task to erase de cache every 24 hours.
 cron.schedule('59 23 * * *', () => {
     console.log('Erasing cache');
-    cache = {};
+    cache = [];
 });
 
 
@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
                 method: 'get'
             })
             .then((response) => {
-                cache[t] = response.data;
+                cache[req.query.t] = response.data;
                 res.send(response.data);
             })
             .catch((err) => {
