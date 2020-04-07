@@ -17,11 +17,12 @@ app.use(bodyParser.json());
 //Schedules a task to erase de cache every 24 hours.
 cron.schedule('59 23 * * *', () => {
     console.log('Erasing cache');
-    cache = [];
+    cache = {};
 });
 
 
 app.get('/', (req, res) => {
+    console.log(req);
     //check if the query has an 'i'
     if (req.query.i) {
         //if it's an i, checks if it's in the cache to send the data.
@@ -29,31 +30,24 @@ app.get('/', (req, res) => {
             res.send(cache[req.query.i]);
         } else {
             //it's not in the cache so it makes the API call with Axios.
-            axios({
-                url: `http://omdbapi.com/?i=${req.query.i}&apikey=${APIKEY}`,
-                method: 'get'
-            })
+            axios.get(`http://omdbapi.com/?i=${req.query.i}&apikey=${APIKEY}`)
             .then((response) => {
                 //saves data on cache and send response back to client.
-                cache[req.query.id] = response.data;
-                res.send(response.data);
+                cache[req.query.i] = response.data;
+                res.status(200).send(response.data);
             })
-            .catch((err) => {
-                console.log(err);
-            });
+            .catch((err) => console.log(err));
         } 
     //same process as a above but for t (title) 
     } else if (req.query.t) {
-        if (req.query.t in cache) {
-            res.send(cache[req.query.t]);
+        let t = encodeURIComponent(req.query.t);
+        if (t in cache) {
+            res.status(200).send(cache[t]);
         } else {
-            axios({
-                url: `http://www.omdbapi.com/?apikey=${APIKEY}&t=${req.query.t}`,
-                method: 'get'
-            })
+            axios.get(`http://www.omdbapi.com/?apikey=${APIKEY}&t=${t}`)
             .then((response) => {
-                cache[req.query.t] = response.data;
-                res.send(response.data);
+                cache[t] = response.data;
+                res.status(200).send(response.data);
             })
             .catch((err) => {
                 console.log(err);
